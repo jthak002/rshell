@@ -1,1 +1,1 @@
-#rshell Repository for Winter 2016
+CS100 Assignment - rshell
