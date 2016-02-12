@@ -98,7 +98,7 @@ bool execute(char* a, int &t)
         if (WIFEXITED(status)) {
             t =  WEXITSTATUS(status);
         }
-        if(pid);
+        if(pid){}
         return true;
     }
 }
