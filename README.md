@@ -18,7 +18,7 @@ represents a comment in this program. Anything after a comment is disregarded.
 After checking for a comment, we create a new string comprising of everything that
 came before the comment, and we then pass this into our parse function.
 
-Our parse function works in the following manner:
+Our parse function works in the following manner:<\n>
     *removing Comments
     *checking for presence && or || 
     *implementing commands
