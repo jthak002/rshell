@@ -23,53 +23,57 @@ using namespace std;
 using namespace boost;
 bool CONTROL=true;
 //****************************************************
-bool execute(char* a, int &t)
-{
-    string scom,sarg;
-    int status;
-    unsigned size=sizeof(a)/sizeof(char);
-    if(size==0)
+//EXECUTE FUNCTION NEEDS WORK--CAN BE MADE A LOT SHORTER--WORKS FOR MILESTONE#1
+//****************************************************
+bool execute(char* a, int &t)   //This function executes the command by accetping a c-string
+{                               //t is a testing variable -- will be utilized later
+    string scom,sarg;           //string for accepting 'COMMAND' and 'ARGUMENTS'
+    int status;                 //TESTING VARIABLE--TO BE USED LATER
+    unsigned size=sizeof(a)/sizeof(char);   //FINDING THE SIZE OF char* a
+    if(size==0)                             //if size is zero exit program right here
         return false;
-        
-    bool flag=false;
-    for(unsigned i=0;i<size || a[i]!='\0';i++)
+    
+    //flag to make sure only the 'COMMAND' part of the program goes into scom    
+    bool flag=false;                        
+    for(unsigned i=0;i<size || a[i]!='\0';i++)//converting a to string type variables scom and sarg
     {
-        if(a[i]==' ' && !flag)
+        //this snipped makes sure that only the COMMAND goes into the scom part of the program
+        if(a[i]==' ' && !flag)  
         {
-            flag=true; continue;
+            flag=true; continue; //once it encounters a space, the rest
         }
         if(flag)
         {
-            sarg=sarg+a[i];
+            sarg=sarg+a[i];     // of the string goues in to sarg
             continue;
         }
-        scom=scom+a[i];
+        scom=scom+a[i]; //as you can see scom only has the command part
     }
-    unsigned scom_length=scom.length()+1;
-    char * command = new char [scom_length];
-    command[scom.length()]='\0';
-    unsigned sarg_length=sarg.length()+1;
+    unsigned scom_length=scom.length()+1;   //this extra line has to be put in because C++ does not allow 
+    char * command = new char [scom_length];    //variables for declaring an array's size.
+    command[scom.length()]='\0';        //the last character is NULL because the cstring needs a null character to signal end..This was a bugfix for execvp not executing 
+    unsigned sarg_length=sarg.length()+1;   //the cstring properly
     char * arguments = new char [sarg_length];
     arguments[sarg.length()]= '\0';
-    for(unsigned i =0;i<scom.length();i++)
-    {
-        command[i]=scom.at(i);
+    for(unsigned i =0;i<scom.length();i++)  //NOW we convert the scom string to a cstring by iterating through the string and  
+    {                                       //assigning each character to its repective place. this complex method has been implemented
+        command[i]=scom.at(i);              //because compilation was giving a "string deprecated when converting to char*" error
     }
     for(unsigned i =0;i<sarg.length();i++)
     {
         arguments[i]=sarg.at(i);
     }
     
-    char* final_command [3];
-    if(sarg.length()==0)
+    char* final_command [3];            //the final_command pointer array goes into the execvp function, which is decribed inthe man
+    if(sarg.length()==0)                //pages as follows: execvp(char* final_command[0], final_command )
     {
-        final_command[0]=command;
-        final_command[1]=NULL;
+        final_command[0]=command;       //single word commands do not have arguments
+        final_command[1]=NULL;          //hence, the 2nd and thrid positions are filled with null
         final_command[2]=NULL;
     }
     else
     {
-        final_command[0]=command;
+        final_command[0]=command;       // multiword commands
         final_command[1]=arguments;
         final_command[2]=NULL;
     }
@@ -78,7 +82,7 @@ bool execute(char* a, int &t)
     pid_t c_pid, pid;
     c_pid=fork();
     
-    if(c_pid==-1)
+    if(c_pid==-1)                       //failed fork
     {
         cout<<"fork failed: please try again"<<endl;
         perror("FORK:");
@@ -91,6 +95,7 @@ bool execute(char* a, int &t)
         t=execvp(final_command[0],final_command);
         perror("INVALID COMMAND ENTERED: COMMAND NOT FOUND");
         exit(-1);
+        return false;
     }    
     else
     {
@@ -102,21 +107,21 @@ bool execute(char* a, int &t)
         return true;
     }
 }
+//EXECVP taken from man pages and examples
 //****************************************************
 
 
 
 void parse_string ( string text)
 {
-    if(text.length()==0)
-        return;
+    if(text.length()==0)                                    //empty string length , returns control back to call
+        return;                                             //This covers the caseof the empty prompt.
     string noctext; //command without the comments
-    char * final_command;
-    vector <string> connectors; 
+    char * final_command;                                   
     
-    char_separator<char> sepcomment("#");
-    tokenizer<char_separator<char> > token_comment(text, sepcomment);
-    bool strip_comment=false;
+    char_separator<char> sepcomment("#");                   //SEPARATING THE COMMENTS FROM THE INPUT---strip it off
+    tokenizer<char_separator<char> > token_comment(text, sepcomment);   //TO BE REVIEWED--WHEN QUOTATION MARKS COME INTO PLAY
+    bool strip_comment=false;                               
     BOOST_FOREACH(string t, token_comment)
     {
         if(!strip_comment)
@@ -127,47 +132,47 @@ void parse_string ( string text)
     }
     
     // cout<<"noctext"<<endl;
-    bool i1=noctext.find("&&") == std::string::npos;
-    bool i2=noctext.find("||") == std::string::npos;
-    bool i3=noctext.find(";") == std::string::npos;
+    bool i1=noctext.find("&&") == std::string::npos;        //checking for presence of &&
+    bool i2=noctext.find("||") == std::string::npos;        //                         ||
+    bool i3=noctext.find(";") == std::string::npos;         //                          ;
     // cout<<i1<<i2<<i3<<endl;
-    if( i1 && i2 && i3 )
+    if( i1 && i2 && i3 )                                    //CASE 1: single commands
     {
         string nostext;
-        char_separator<char> sepspaces(" ");
-        tokenizer<char_separator<char> > token_spaces(noctext, sepspaces);
+        char_separator<char> sepspaces(" ");                //removing spaces using boost libraries
+        tokenizer<char_separator<char> > token_spaces(noctext, sepspaces);  //
         bool first_token_added=false;
-        BOOST_FOREACH(string t, token_spaces)
-        {
+        BOOST_FOREACH(string t, token_spaces)               //recompiling the string with exactly one space between
+        {                                                   //the words in the string::replicates terminal behaviour
             if(!first_token_added)
             {
-                first_token_added=true;
-                nostext=nostext+t;
-            }
+                first_token_added=true;                      
+                nostext=nostext+t;                          //The first token should not have spaces-->since the string is empty the next statement will
+            }                                               //add a space before the COMMAND
             else
                 nostext=nostext + " " + t;        
         }
         if(nostext=="exit")//********EXPERIMENTAL*****TURN BACK ON IF STOPS WORKING
              exit(0);       //required for extra space exit commands
-        if(nostext.length()==0)
+        if(nostext.length()==0)                             //ANOTHER CASE FOR EMPTY string 
             return;
         //nostext=nostext+'\0';
-        final_command=new char[nostext.size() + 1];
+        final_command=new char[nostext.size() + 1];         //CREATING char* for passing to execute(char* , int&)
         memcpy(final_command, nostext.c_str(), nostext.size() + 1);
         int m;
         execute(final_command, m);
         return;
         
     }
-    else if ( i1 && i1 && !i3)
+    else if ( i1 && i1 && !i3)                              //CASE 2: multiple commands chained only with ';'
     {
-        string nosctext;
+        string nosctext;                                    //using boost to split the string with semi colons
         char_separator<char> sepsemicolon(";");
         tokenizer<char_separator<char> > token_semicolon(noctext, sepsemicolon);
         BOOST_FOREACH(string t, token_semicolon)
         {
-            parse_string(t);
-        }
+            parse_string(t);                                //Each segmented string without semi colons is passed into
+        }                                                   //parse_string() again----RECURSIVE
         return;
     }
     
@@ -179,17 +184,17 @@ void parse_string ( string text)
 }
 int main()
 {
-    string t;
-    char* login=getlogin();
-    char hostname[1024];
-    hostname[1023]='\0';
+    string t;               //accepting command line input 
+    char* login=getlogin(); //getting the login
+    char hostname[1024];    //hostname
+    hostname[1023]='\0';    //CONVENTIONS FOR OBTAINING HOSTNAME
     int hostname_affirm=gethostname(hostname,30);
     while(CONTROL)
     {
-        if(login==NULL || hostname_affirm!=0)
-        cout<<"$ ";
+        if(login==NULL || hostname_affirm!=0)   //checking if hostname is available
+        cout<<"$ ";         //DISPLAYING THE DOLLAR PROMPT IF hostname is not available (like in cloud9)
         else
-        cout<<login<<"@"<<hostname<<"$ ";
+        cout<<login<<"@"<<hostname<<"$ ";   //display prompt if prompt is available
         getline(cin,t);
         if(t=="exit")
             exit(0);
