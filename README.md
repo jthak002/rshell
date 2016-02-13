@@ -23,13 +23,26 @@ Our parse function works in the following manner:<\n>
     *checking for presence && or || 
     *implementing commands
 
+
+ADDED chain calling functionality '|| && and ; '
+
+
 <h2>Bugs</h2>
 ---------------
-*Missing Functionality - && and ||
-*Quotation marks are not supported by the echo command
-*ls cannot access directory info on the first run on hammer-- only the first time though. the function worls properly whjen called the first time.
-This behaviour is observed only on hammer. it works perfectly on cloud9, Mac OSX and Ubuntu.
-*getlogin() doesn't work on cloud9. works on MACOSX hammer and Ubuntu.
+>>>>>Commands that create files and folders(mkdir) return successful run, even if parameters provided are wrong for ex. mkdir bob, if bob exists, 
+returns an error, but still reports a successful run
+
+
+>>>>>Quotation marks are not supported by the echo command
+
+
+>>>>>ls cannot access directory info on the first run on hammer-- only the first time though. the function works properly when called the second time.
+This behaviour is observed only on hammer. It works perfectly on cloud9, Mac OSX and Ubuntu.
+
+
+>>>>>getlogin() doesn't work on cloud9. works on MACOSX hammer and Ubuntu.
+(https://drive.google.com/file/d/0BzOargFVA7MrcERQRTZZTkpHZFU/view?usp=sharing)
+(https://drive.google.com/file/d/0BzOargFVA7MraEx2ejJENGNOd2M/view?usp=sharing)
 
 
 
