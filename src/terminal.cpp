@@ -22,6 +22,7 @@
 using namespace std;
 using namespace boost;
 bool CONTROL=true;
+static bool prev=true;
 //****************************************************
 //EXECUTE FUNCTION NEEDS WORK--CAN BE MADE A LOT SHORTER--WORKS FOR MILESTONE#1
 //****************************************************
@@ -109,7 +110,37 @@ bool execute(char* a, int &t)   //This function executes the command by accetpin
 }
 //EXECVP taken from man pages and examples
 //****************************************************
+// BOOL HELPER
+bool parses_string ( string text)
+{
+        string nostext;
+        char_separator<char> sepspaces(" ");                //removing spaces using boost libraries
+        tokenizer<char_separator<char> > token_spaces(text, sepspaces);  //
+        bool first_token_added=false;
+        BOOST_FOREACH(string t, token_spaces)               //recompiling the string with exactly one space between
+        {                                                   //the words in the string::replicates terminal behaviour
+            if(!first_token_added)
+            {
+                first_token_added=true;                      
+                nostext=nostext+t;                          //The first token should not have spaces-->since the string is empty the next statement will
+            }                                               //add a space before the COMMAND
+            else
+                nostext=nostext + " " + t;        
+        }
+        if(nostext=="exit")//********EXPERIMENTAL*****TURN BACK ON IF STOPS WORKING
+             exit(0);       //required for extra space exit commands
+        if(nostext.length()==0)                             //ANOTHER CASE FOR EMPTY string 
+            return false;
+        //nostext=nostext+'\0';
+        char* final_command=new char[nostext.size() + 1];         //CREATING char* for passing to execute(char* , int&)
+        memcpy(final_command, nostext.c_str(), nostext.size() + 1);
+        int m;
+        
+        return execute(final_command, m);
+}
 
+
+//bool helper
 
 
 void parse_string ( string text)
@@ -178,10 +209,73 @@ void parse_string ( string text)
     
     else if( (!i1 || !i2) && i3 )
     {
+        vector<char> connector;
         
+        for(unsigned i=0;i<noctext.length()-1;)
+        {
+            if(noctext.at(i)=='&' && noctext.at(i+1)=='&')
+            {
+                connector.push_back('&');
+                i=i+2;
+                continue;
+            }
+            if(noctext.at(i)=='|' && noctext.at(i+1)=='|')
+            {
+                connector.push_back('|');
+                i=i+2;
+                continue;
+            }
+            else{
+                i++;
+            }
+        }
+        connector.push_back('\0');
+        
+        bool yflag=true;
+        char_separator<char> sepnotamp("&&","||");
+        tokenizer<char_separator<char> > token_notamp(noctext,sepnotamp);
+        unsigned i=0;
+        BOOST_FOREACH(string t, token_notamp)
+        {
+            if(i>connector.size()-1)
+                break;
+            if(yflag)
+            {
+                prev=parses_string(t);
+                yflag=false;
+                continue;
+            }
+            if(connector.at(i)=='&' && prev==true)
+            {
+                prev=parses_string(t);
+                i++;
+            }
+            else if(connector.at(i)=='|' && prev==false)
+            {
+                prev=parses_string(t);
+                i++;
+            }
+            else
+            {
+                i++;
+                continue;   
+            }
+            
+        }
     }
-    
+    else if( (!i1 || !i2) && !i3 )
+    {
+        string nosctextNOTAMP;                                    //using boost to split the string with semi colons
+        char_separator<char> sepsemicolonNOTAMP(";");
+        tokenizer<char_separator<char> > token_semicolonNOTAMP(noctext, sepsemicolonNOTAMP);
+        BOOST_FOREACH(string t, token_semicolonNOTAMP)
+        {
+            parse_string(t);                                //Each segmented string without semi colons is passed into
+        }                                                   //parse_string() again----RECURSIVE
+        return;
+    }
 }
+
 int main()
 {
     string t;               //accepting command line input 
