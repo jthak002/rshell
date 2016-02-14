@@ -40,6 +40,9 @@ returns an error, but still reports a successful run
 This behaviour is observed only on hammer. It works perfectly on cloud9, Mac OSX and Ubuntu.
 
 
+>>>>>Need to fix boost tokenizer char separator for '&&' or '||' to support presence of single '&' and '|'
+
+
 >>>>>getlogin() doesn't work on cloud9. works on MACOSX hammer and Ubuntu.
 (https://drive.google.com/file/d/0BzOargFVA7MrcERQRTZZTkpHZFU/view?usp=sharing)
 (https://drive.google.com/file/d/0BzOargFVA7MraEx2ejJENGNOd2M/view?usp=sharing)
