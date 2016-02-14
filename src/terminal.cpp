@@ -257,6 +257,7 @@ void parse_string ( string text)
             }
             else
             {
+                prev=false;
                 i++;
                 continue;   
             }
