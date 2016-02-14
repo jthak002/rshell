@@ -65,7 +65,7 @@ bool execute(char* a, int &t)   //This function executes the command by accetpin
         arguments[i]=sarg.at(i);
     }
     
-    char* final_command [3];            //the final_command pointer array goes into the execvp function, which is decribed inthe man
+    char* final_command [3];  //the final_command pointer array goes into the execvp function, which is decribed inthe man
     if(sarg.length()==0)                //pages as follows: execvp(char* final_command[0], final_command )
     {
         final_command[0]=command;       //single word commands do not have arguments
@@ -232,7 +232,7 @@ void parse_string ( string text)
         connector.push_back('\0');
         
         bool yflag=true;
-        char_separator<char> sepnotamp("&&","||");
+        char_separator<char> sepnotamp("&|");
         tokenizer<char_separator<char> > token_notamp(noctext,sepnotamp);
         unsigned i=0;
         BOOST_FOREACH(string t, token_notamp)
