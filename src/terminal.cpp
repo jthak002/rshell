@@ -94,7 +94,7 @@ bool execute(char* a, int &t)   //This function executes the command by accetpin
         // if(final_command[0]=="exit")
         //     exit(0);
         t=execvp(final_command[0],final_command);
-        perror("INVALID COMMAND ENTERED: COMMAND NOT FOUND");
+        printf("-rshell: %s: command not found\n", command);
         exit(-1);
         return false;
     }    
