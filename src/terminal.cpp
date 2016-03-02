@@ -95,17 +95,22 @@ bool execute(char* a, int &t)   //This function executes the command by accetpin
         //     exit(0);
         t=execvp(final_command[0],final_command);
         printf("-rshell: %s: command not found\n", command);
-        exit(-1);
-        return false;
+        //cout<<"TEST FOR EXECBRANCH::exit code--> "<<t<<endl;
+        exit(t);
     }    
     else
     {
         pid = wait(&status);
-        if (WIFEXITED(status)) {
-            t =  WEXITSTATUS(status);
-        }
+        //cout<<"TEST FOR EXECBRANCH::status code--> "<<status<<endl;
+        //cout<<"TEST FOR EXECBRANCH::What does pid do? code--> "<<pid<<endl;
+        //if (WIFEXITED(status)) {
+        //    t =  WEXITSTATUS(status);
+        //}
         if(pid){}
-        return true;
+        if(status==0)
+            return true;
+        else 
+            return false;
     }
 }
 //EXECVP taken from man pages and examples
