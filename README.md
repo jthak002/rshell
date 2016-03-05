@@ -45,10 +45,7 @@ returns an error, but still reports a successful run
 <li>Need to fix boost tokenizer char separator for '&&' or '||' to support presence of single '&' and '|'</li>
 
 
-<li>getlogin() doesn't work on cloud9. works on MACOSX hammer and Ubuntu.
-<img src="https://drive.google.com/file/d/0BzOargFVA7MrcERQRTZZTkpHZFU/view?usp=sharing"/>
-<img src="https://drive.google.com/file/d/0BzOargFVA7MraEx2ejJENGNOd2M/view?usp=sharing"/>
-</li>
+<li>getlogin() doesn't work on cloud9. works on MACOSX hammer and Ubuntu.</li>
 </ul>
 
 
