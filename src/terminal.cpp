@@ -23,6 +23,105 @@ using namespace std;
 using namespace boost;
 bool CONTROL=true;
 static bool prev=true;
+
+//****************************************************
+//STAT FUNCTION--MILESTONE#3
+//****************************************************
+bool stat_function(string command)
+{
+    try
+    {
+        vector<string> commandstring;
+        string flag, pathname;
+        char_separator<char> sepspaces(" ");                //removing spaces using boost libraries
+        tokenizer<char_separator<char> > token_spaces(command, sepspaces);  //
+        BOOST_FOREACH(string t, token_spaces)               //recompiling the string with exactly one space between
+        {                                                   //the words in the string::replicates terminal behaviour
+            commandstring.push_back(t);    
+        }
+        if(commandstring.at(0)=="test" && ( commandstring.at(1)=="-e" || commandstring.at(1)=="-f" || commandstring.at(1)=="-d") )
+        {
+            flag = commandstring.at(1); 
+            pathname = commandstring.at(2);
+        }
+        else if(commandstring.at(0)=="test" && commandstring.size()==2)
+        {
+            flag="-e";
+            pathname=commandstring.at(1);
+        }
+        else if(commandstring.at(0)=="[")
+        {
+            bool check_closing_square=false;
+            if(commandstring.at(2)=="]" || commandstring.at(3)=="]")
+            {
+                check_closing_square=true;
+                if(!check_closing_square)
+                    return false;
+            }
+            
+            if(commandstring.at(1)=="-e" || commandstring.at(1)=="-f" || commandstring.at(1)=="-d")
+            {
+                flag=commandstring.at(1);
+                pathname=commandstring.at(2);
+            }
+            else
+            {
+                flag="-e";
+                pathname=commandstring.at(1);
+            }
+            
+        }
+        else
+            return false;
+        
+        struct stat* c1 = new struct stat;
+        char * path =  new char [pathname.size()+1];
+        for(unsigned i=0; i < pathname.size();i++)
+            path[i]=pathname.at(i);
+        path[pathname.size()]='\0';
+        //TEST FEATURE:: TO CHECK THE CORRECTNESS OF THE PATH :: UNCOMMENT TO CHECK IT OUT
+        //cout<<path<<endl;
+        
+        int returnval = stat(path, c1);
+        if(returnval == -1){
+            cout<<"(False)"<<endl;
+            return false;
+        }
+        
+        int isdir = (c1->st_mode & S_IFDIR);
+        int isreg = (c1->st_mode & S_IFREG);
+        
+        if(flag=="-e")
+        {
+            cout<<"(True)"<<endl;
+            return true;
+        }
+        else if(flag=="-f" && isreg!=0)
+        {
+            cout<<"(True)"<<endl;
+            return true;
+        }
+        else if(flag=="-d" && isdir!=0)
+        {
+            cout<<"(True)"<<endl;
+            return true;
+        }
+        else
+        {
+            cout<<"(False)"<<endl;
+            return false;
+        }
+        return false;
+    }
+    catch(std::exception e)
+    {
+        cout<<"-rshell: invalid test command syntax"<<endl;
+        return false;
+    }
+}
+//STAT taken from man pages and examples
+//****************************************************
+
 //****************************************************
 //EXECUTE FUNCTION NEEDS WORK--CAN BE MADE A LOT SHORTER--WORKS FOR MILESTONE#1
 //****************************************************
@@ -33,6 +132,7 @@ bool execute(char* a, int &t)   //This function executes the command by accetpin
     unsigned size=sizeof(a)/sizeof(char);   //FINDING THE SIZE OF char* a
     if(size==0)                             //if size is zero exit program right here
         return false;
+    
     
     //flag to make sure only the 'COMMAND' part of the program goes into scom    
     bool flag=false;                        
@@ -64,7 +164,11 @@ bool execute(char* a, int &t)   //This function executes the command by accetpin
     {
         arguments[i]=sarg.at(i);
     }
-    
+    string commandtest=command;
+    if(commandtest=="test" || commandtest=="[")
+    {
+        return stat_function(a);
+    }
     char* final_command [3];  //the final_command pointer array goes into the execvp function, which is decribed inthe man
     if(sarg.length()==0)                //pages as follows: execvp(char* final_command[0], final_command )
     {
@@ -115,7 +219,7 @@ bool execute(char* a, int &t)   //This function executes the command by accetpin
 }
 //EXECVP taken from man pages and examples
 //****************************************************
-// BOOL HELPER
+
 bool parses_string ( string text)
 {
         string nostext;
@@ -146,8 +250,6 @@ bool parses_string ( string text)
 
 
 //bool helper
-
-
 void parse_string ( string text)
 {
     if(text.length()==0)                                    //empty string length , returns control back to call
