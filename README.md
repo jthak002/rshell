@@ -30,9 +30,9 @@ Our parse function works in the following manner:<\n>
 
 
 <h2>Bugs</h2>
----------------
+
 <ul>
-<li>Commands that create files and folders(mkdir) return successful run, even if parameters provided are wrong for ex. mkdir bob, if bob exists, 
+<li><bold>[FIXED]</bold>Commands that create files and folders(mkdir) return successful run, even if parameters provided are wrong for ex. mkdir bob, if bob exists, 
 returns an error, but still reports a successful run
 
 
