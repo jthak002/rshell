@@ -22,7 +22,7 @@
 using namespace std;
 using namespace boost;
 bool CONTROL=true;
-static bool prev=true;
+bool prev=true;
 
 //****************************************************
 //STAT FUNCTION--MILESTONE#3
@@ -32,39 +32,39 @@ bool stat_function(string command)
     try
     {
         vector<string> commandstring;
-        string flag, pathname;
+        string flag, pathname;                              //VARIABLE to store flags and the pathname
         char_separator<char> sepspaces(" ");                //removing spaces using boost libraries
         tokenizer<char_separator<char> > token_spaces(command, sepspaces);  //
         BOOST_FOREACH(string t, token_spaces)               //recompiling the string with exactly one space between
         {                                                   //the words in the string::replicates terminal behaviour
             commandstring.push_back(t);    
         }
-        if(commandstring.at(0)=="test" && ( commandstring.at(1)=="-e" || commandstring.at(1)=="-f" || commandstring.at(1)=="-d") )
+        if(commandstring.at(0)=="test" && ( commandstring.at(1)=="-e" || commandstring.at(1)=="-f" || commandstring.at(1)=="-d") ) //CASE 1.0: test -[flags] [pathname]
         {
             flag = commandstring.at(1); 
             pathname = commandstring.at(2);
         }
-        else if(commandstring.at(0)=="test" && commandstring.size()==2)
+        else if(commandstring.at(0)=="test" && commandstring.size()==2)                 //CASE 1.1: test [pathname]
         {
             flag="-e";
             pathname=commandstring.at(1);
         }
-        else if(commandstring.at(0)=="[")
+        else if(commandstring.at(0)=="[")                                               
         {
             bool check_closing_square=false;
-            if(commandstring.at(2)=="]" || commandstring.at(3)=="]")
+            if(commandstring.at(2)=="]" || commandstring.at(3)=="]")// checks for invalid commands or syntax:: without the closing brackets
             {
                 check_closing_square=true;
                 if(!check_closing_square)
                     return false;
             }
             
-            if(commandstring.at(1)=="-e" || commandstring.at(1)=="-f" || commandstring.at(1)=="-d")
+            if(commandstring.at(1)=="-e" || commandstring.at(1)=="-f" || commandstring.at(1)=="-d")//CASE 2.0: [-[flags] pathname ] "SQUARE BRACKET OPERATOR"
             {
                 flag=commandstring.at(1);
                 pathname=commandstring.at(2);
             }
-            else
+            else                            //CASE 2.0: [ pathname ] "SQUARE BRACKET OPERATOR WITH DEFAULT FLAG -e"
             {
                 flag="-e";
                 pathname=commandstring.at(1);
@@ -72,26 +72,26 @@ bool stat_function(string command)
             
         }
         else
-            return false;
+            return false;       //returns command failure for ever other case
         
-        struct stat* c1 = new struct stat;
+        struct stat* c1 = new struct stat;                  //DECLARE a new stat struct for use with stat function
         char * path =  new char [pathname.size()+1];
-        for(unsigned i=0; i < pathname.size();i++)
+        for(unsigned i=0; i < pathname.size();i++)          //converts the string to char* 
             path[i]=pathname.at(i);
-        path[pathname.size()]='\0';
+        path[pathname.size()]='\0';                         //last element of char* a should be a null pointer to signify end and prevent seg faults
         //TEST FEATURE:: TO CHECK THE CORRECTNESS OF THE PATH :: UNCOMMENT TO CHECK IT OUT
         //cout<<path<<endl;
         
-        int returnval = stat(path, c1);
-        if(returnval == -1){
-            cout<<"(False)"<<endl;
+        int returnval = stat(path, c1);                     //CRUX_OF_THE_FUNCTION: accepts the path in c-string and passing the stat struct by reference 
+        if(returnval == -1){                                //which writes the details of the file in the stat struct c1.
+            cout<<"(False)"<<endl;                          //Stat function returns a non zero value for runtime failure
             return false;
         }
         
-        int isdir = (c1->st_mode & S_IFDIR);
-        int isreg = (c1->st_mode & S_IFREG);
+        int isdir = (c1->st_mode & S_IFDIR);                //checking if flags for S_IFDIR and S_IFREG are set
+        int isreg = (c1->st_mode & S_IFREG);                //PRO TIP: 711 are octal numbers, not hex? weird, innit?
         
-        if(flag=="-e")
+        if(flag=="-e")                                      //different cases for inferring the type of file.
         {
             cout<<"(True)"<<endl;
             return true;
@@ -113,8 +113,8 @@ bool stat_function(string command)
         }
         return false;
     }
-    catch(std::exception e)
-    {
+    catch(std::exception e)                             //entering an improper test command would often result in the improper initialization of vector
+    {                                                   //so, I've used exception handling to prevent the program from crashing due to inputs like "[-f./pathname]""
         cout<<"-rshell: invalid test command syntax"<<endl;
         return false;
     }
@@ -250,10 +250,10 @@ bool parses_string ( string text)
 
 
 //bool helper
-void parse_string ( string text)
+bool parse_string ( string text)
 {
     if(text.length()==0)                                    //empty string length , returns control back to call
-        return;                                             //This covers the caseof the empty prompt.
+        return true;                                            //This covers the caseof the empty prompt.
     string noctext; //command without the comments
     char * final_command;                                   
     
@@ -293,13 +293,12 @@ void parse_string ( string text)
         if(nostext=="exit")//********EXPERIMENTAL*****TURN BACK ON IF STOPS WORKING
              exit(0);       //required for extra space exit commands
         if(nostext.length()==0)                             //ANOTHER CASE FOR EMPTY string 
-            return;
+            return true;
         //nostext=nostext+'\0';
         final_command=new char[nostext.size() + 1];         //CREATING char* for passing to execute(char* , int&)
         memcpy(final_command, nostext.c_str(), nostext.size() + 1);
         int m;
-        execute(final_command, m);
-        return;
+        return execute(final_command, m);
         
     }
     else if ( i1 && i1 && !i3)                              //CASE 2: multiple commands chained only with ';'
@@ -309,78 +308,166 @@ void parse_string ( string text)
         tokenizer<char_separator<char> > token_semicolon(noctext, sepsemicolon);
         BOOST_FOREACH(string t, token_semicolon)
         {
-            parse_string(t);                                //Each segmented string without semi colons is passed into
+            return parse_string(t);                                //Each segmented string without semi colons is passed into
         }                                                   //parse_string() again----RECURSIVE
-        return;
+        
     }
     
-    else if( (!i1 || !i2) && i3 )
+    else if( (!i1 || !i2) && i3 )                       //CASE 3: multiple commands chained with connectors
     {
         vector<char> connector;
         
-        for(unsigned i=0;i<noctext.length()-1;)
+        for(unsigned i=0;i<noctext.length()-1;)         //we traverse the vector for connectors at several places within the program.
         {
-            if(noctext.at(i)=='&' && noctext.at(i+1)=='&')
+            if(noctext.at(i)=='&' && noctext.at(i+1)=='&')  //each instance of && is found and then added to the connector vector
             {
                 connector.push_back('&');
                 i=i+2;
                 continue;
             }
-            if(noctext.at(i)=='|' && noctext.at(i+1)=='|')
-            {
-                connector.push_back('|');
-                i=i+2;
+            if(noctext.at(i)=='|' && noctext.at(i+1)=='|')  //the same is done for ||. This connector vector will be later used to execute the commands
+            {                                               //one by one and, decided the execurtion of the next command by taking into consideration
+                connector.push_back('|');                   //the next connector that occurs and the result of the previous command (succesful run is 
+                i=i+2;                                      //'true' and an unsuccessful run returns false)(see bool execute)
                 continue;
             }
             else{
                 i++;
             }
         }
-        connector.push_back('\0');
+        connector.push_back('\0'); // adding a null character to signify end of vector
         
-        bool yflag=true;
-        char_separator<char> sepnotamp("&|");
-        tokenizer<char_separator<char> > token_notamp(noctext,sepnotamp);
+        bool yflag=true;                                    //flag to signify first command execution--since the first command will set bool prev to true or false 
+                                                            //to denote a successful run
+        char_separator<char> sepnotamp("&|");                               //separating && and || using BOOST TOKENIZER
+        tokenizer<char_separator<char> > token_notamp(noctext,sepnotamp);   //BUG:: CANNOT DIFFERENTIATE BETWEEN '&' and'&&''  and '|' and '||''
         unsigned i=0;
         BOOST_FOREACH(string t, token_notamp)
         {
-            if(i>connector.size()-1)
+            if(i>connector.size()-1)                        //safeguard program execution by not going OUT_OF_BOUNDS for vector <char> connector 
                 break;
-            if(yflag)
+            if(yflag)                   
             {
                 prev=parses_string(t);
                 yflag=false;
                 continue;
             }
-            if(connector.at(i)=='&' && prev==true)
+            if(connector.at(i)=='&' && prev==true)          //CONDITION FOR AND:: prev should be true
             {
                 prev=parses_string(t);
                 i++;
             }
-            else if(connector.at(i)=='|' && prev==false)
+            else if(connector.at(i)=='|' && prev==false)  //CONDITION FOR OR:: prev should be false
             {
                 prev=parses_string(t);
                 i++;
             }
-            else
-            {
+            else                                        //SECTION for skipped commands:: the command that shouldn't be executed because the prev 
+            {                                           //and CONNECTOR do not satisfy CONDITION for execution
                 i++;
                 continue;   
             }
             
         }
+        return prev;
     }
-    else if( (!i1 || !i2) && !i3 )
-    {
+    else if( (!i1 || !i2) && !i3 )                      //CASE 4: multiple commands chained together with semicolons and connectors.
+    {                                                   //TASK::TO SEPARATE all commands connected by semi colon.
         string nosctextNOTAMP;                                    //using boost to split the string with semi colons
         char_separator<char> sepsemicolonNOTAMP(";");
         tokenizer<char_separator<char> > token_semicolonNOTAMP(noctext, sepsemicolonNOTAMP);
         BOOST_FOREACH(string t, token_semicolonNOTAMP)
         {
-            parse_string(t);                                //Each segmented string without semi colons is passed into
+            return parse_string(t);                                //Each segmented string without semi colons is passed into
         }                                                   //parse_string() again----RECURSIVE
-        return;
+
     }
+    return false;
+}
+//****************************************************
+//PARSE_BRACKETS FUNCTION--MILESTONE#4
+//****************************************************
+bool parse_brackets (string text) {                 //PARSING BRACKETS::TO BE COMMENTED
+    int pcounter = 0;
+    int beginning = 0;
+    int end = 0;
+    bool yesp = false;
+    bool endreached = false;
+    bool first_command_no_p = false;
+    bool nosecondpart = false;
+    
+    for (unsigned i = 0; i < text.size(); i++) 
+    {
+        if (!first_command_no_p && !yesp) {
+            if (text.at(i) == '&' && text.at(i + 1) == '&') {
+               first_command_no_p = true;
+               end = i;
+            }
+            if (text.at(i) == '|' && text.at(i + 1) == '|') {
+               first_command_no_p = true;
+               end = i;
+            }
+        }
+        if (!first_command_no_p && text.at(i) == '(')
+        {
+            if (pcounter == 0)
+            {
+                beginning = i + 1;
+            }
+            yesp = true;
+            pcounter++;
+        }
+        if (!first_command_no_p && text.at(i) == ')') {
+            if (pcounter == 1) 
+            {
+                end = i;
+                endreached = true;
+            }
+            if (i == (text.size() - 1)) {
+                nosecondpart = true;
+            }
+            pcounter--;
+        }
+        if (endreached)
+        {
+            i = text.size();
+        }
+    }
+    
+    if (!yesp && !first_command_no_p)
+    {
+        return parse_string(text);
+    }
+    
+    string newtext = text.substr (beginning, (end - beginning));
+    //cout << "first part: " << newtext << endl;
+
+    bool returnvalue = parse_brackets(newtext);
+    if (nosecondpart) {
+        return returnvalue;
+    }
+    
+    bool enable = true;
+    for (unsigned i = end; i < text.size(); i++) {
+        if (enable && text.at(i) == '&' && text.at(i + 1) == '&')
+        {
+            end = i + 2;
+            enable = false;
+        }
+        if (enable && text.at(i) == '|' && text.at(i + 1) == '|')
+        {
+            if (returnvalue) {
+                return true;
+            }
+            end = i + 2;
+            enable = false;
+        }
+    }
+    
+    string temp = text.substr (end, text.size() - end);
+    //cout << "second part: "<< temp << endl;
+    
+    return parse_brackets (temp);
 }
 
 int main()
@@ -399,7 +486,7 @@ int main()
         getline(cin,t);
         if(t=="exit")
             exit(0);
-        parse_string(t);
+        parse_brackets(t);
     }
     return 0;
 }
